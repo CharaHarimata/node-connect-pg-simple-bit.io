@@ -388,7 +388,7 @@ module.exports = function (session) {
      */
     set (sid, sess, fn) {
       const expireTime = this.#getExpireTime(sess);
-      const query = 'INSERT INTO ' + this.quotedTable() + ' (sess, expire, sid) SELECT $1, to_timestamp($2), $3 ON CONFLICT (sid) DO UPDATE SET sess=$1, expire=to_timestamp($2) RETURNING sid';
+      const query = 'BEGIN; LOCK TABLE ' + this.quotedTable() + ' IN SHARE ROW EXCLUSIVE MODE; WITH upsert AS (UPDATE ' + this.quotedTable() + ' SET sess=$1, expire=to_timestamp($2) WHERE ($3=sid) RETURNING sid); INSERT INTO ' + this.quotedTable() + ' (sess, expire, sid) SELECT $1, to_timestamp($2), $3, 1 WHERE NOT EXISTS (SELECT * FROM upsert); COMMIT';
 
       this.query(
         query,
