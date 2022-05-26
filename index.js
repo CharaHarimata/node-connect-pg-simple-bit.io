@@ -388,7 +388,7 @@ module.exports = function (session) {
      */
     set (sid, sess, fn) {
       const expireTime = this.#getExpireTime(sess);
-      const query = 'BEGIN; LOCK TABLE ' + this.quotedTable() + ' IN SHARE ROW EXCLUSIVE MODE; WITH upsert AS (UPDATE ' + this.quotedTable() + ' SET sess=$1, expire=to_timestamp($2) WHERE ($3=sid) RETURNING sid); INSERT INTO ' + this.quotedTable() + ' (sess, expire, sid) SELECT $1, to_timestamp($2), $3, 1 WHERE NOT EXISTS (SELECT * FROM upsert); COMMIT';
+      const query = 'BEGIN; CREATE TEMPORARY TABLE newvals(sess json, expire timestamp(6), sid varchar); INSERT INTO newvals(sess, expire, sid) VALUES (2, 'Joe'), (3, 'Alan'); LOCK TABLE ' + this.quotedTable() + ' IN EXCLUSIVE MODE; UPDATE ' + this.quotedTable() + ' SET sess=$1, expire=to_timestamp($2) FROM newvals WHERE newvals.sid = ' + this.quotedTable() + '.sid; INSERT INTO ' + this.quotedTable() + ' SELECT newvals.sid, newvals.sess, newvals.expire FROM newvals LEFT OUTER JOIN ' + this.quotedTable() + ' ON (' + this.quotedTable() + '.sid = newvals.sid) WHERE ' + this.quotedTable() + '.sid IS NULL; COMMIT;';
 
       this.query(
         query,
