@@ -388,7 +388,7 @@ module.exports = function (session) {
      */
     set (sid, sess, fn) {
       const expireTime = this.#getExpireTime(sess);
-      const query = 'IF EXISTS (SELECT FROM ' + this.quotedTable() + ' WHERE sid=$3) THEN UPDATE SET sess=$1, expire=to_timestamp($2); ELSE THEN INSERT INTO ' + this.quotedTable() + ' (sess, expire, sid); END IF;';
+      const query = 'IF EXISTS (SELECT FROM ' + this.quotedTable() + ' WHERE sid=$3) THEN UPDATE SET sess=$1, expire=to_timestamp($2); ELSE IF NOT EXISTS(SELECT FROM ' + this.quotedTable() + ' WHERE sid=$3) THEN INSERT INTO ' + this.quotedTable() + ' (sess, expire, sid); END IF;';
       this.query(
         query,
         [sess, expireTime, sid],
