@@ -388,7 +388,7 @@ module.exports = function (session) {
      */
     set (sid, sess, fn) {
       const expireTime = this.#getExpireTime(sess);
-      const query = 'BEGIN; SELECT FROM ' + this.quotedTable() + ' WHERE sid=$3; UPDATE ' + this.quotedTable() + ' SET sess=$1, expire=to_timestamp($2) WHERE sid=$3; EXCEPTION WHEN unique_violation THEN INSERT INTO ' + this.quotedTable() + ' (sess, expire, sid) VALUES ($1,$2,$3); END;';
+      const query = 'BEGIN; SELECT FROM ' + this.quotedTable() + ' WHERE sid=$3; UPDATE ' + this.quotedTable() + ' SET sess=$1, expire=to_timestamp($2) WHERE sid=$3; EXCEPTION WHEN unique_violation THEN INSERT INTO ' + this.quotedTable() + ' (sess, expire, sid) VALUES ($1,to_timestamp($2),$3); END;';
       this.query(
         query,
         [sess, expireTime, sid],
